@@ -37,5 +37,12 @@ Requires Node `^20.19.0 || >=22.12.0`.
 
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
-shell commands, and other important information, read the current plan
+shell commands, and other important information, read the current plan at
+`specs/001-o8-lobby-home-ui/plan.md`.
+
+Active feature: **001-o8-lobby-home-ui** (O8 手機版遊戲大廳首頁 UI Demo)
+- Spec: `specs/001-o8-lobby-home-ui/spec.md`
+- Data model: `specs/001-o8-lobby-home-ui/data-model.md`
+- Component contracts: `specs/001-o8-lobby-home-ui/contracts/`
+- Validation guide: `specs/001-o8-lobby-home-ui/quickstart.md`
 <!-- SPECKIT END -->
