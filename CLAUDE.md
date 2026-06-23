@@ -38,11 +38,17 @@ Requires Node `^20.19.0 || >=22.12.0`.
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan at
-`specs/001-o8-lobby-home-ui/plan.md`.
+`specs/003-search-result-provider-page/plan.md`.
 
-Active feature: **001-o8-lobby-home-ui** (O8 手機版遊戲大廳首頁 UI Demo)
-- Spec: `specs/001-o8-lobby-home-ui/spec.md`
-- Data model: `specs/001-o8-lobby-home-ui/data-model.md`
-- Component contracts: `specs/001-o8-lobby-home-ui/contracts/`
-- Validation guide: `specs/001-o8-lobby-home-ui/quickstart.md`
+Active feature: **003-search-result-provider-page** (搜尋結果頁與遊戲商遊戲列表頁)
+- Spec: `specs/003-search-result-provider-page/spec.md`
+- Plan: `specs/003-search-result-provider-page/plan.md`
+- Data Model: `specs/003-search-result-provider-page/data-model.md`
+- Research: `specs/003-search-result-provider-page/research.md`
+- Quickstart: `specs/003-search-result-provider-page/quickstart.md`
+- Contracts: `specs/003-search-result-provider-page/contracts/`
+- Checklist: `specs/003-search-result-provider-page/checklists/requirements.md`
+
+Previous feature (completed through Phase 4):
+- **002-ugs-lobby-api-integration** — Spec: `specs/002-ugs-lobby-api-integration/spec.md`
 <!-- SPECKIT END -->

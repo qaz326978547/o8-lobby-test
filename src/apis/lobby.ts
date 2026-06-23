@@ -1,19 +1,40 @@
 import { $http, isResponseOK, asyncDo } from '@/apis/https'
-import type { ILobbyResponse } from '@/apis/interface/lobby'
+import type {
+  ILobbyResponse,
+  LobbySearchResponse,
+  SearchLobbyParams,
+  GameLaunchParams,
+} from '@/apis/interface/lobby'
 
 export namespace LobbyApi {
   export async function getLobbyData(
     lobbyPath: 'mobile' | 'desktop' | 'o8' = 'mobile',
+    token: string,
   ): Promise<ILobbyResponse | false> {
-    const token =
-      'NQtu8t0MV8SFACLkbB4Uo2vqDCuwO00wiVNcFheehUT4HeVMBMRU9F5pzBTuEqWcleabB8cnnbhS0fmydu6J0nzg41dP08e7bhzsWPZKx0hDAviXHqt9EqX8Epq8X7dJ8'
     const [err, result] = await asyncDo(
-      $http<ILobbyResponse>('get', `/lobby/${lobbyPath}`, { token }),
+      $http<ILobbyResponse>('get', `/api/lobby/${lobbyPath}`, { token }),
     )
     if (!isResponseOK(err, result) || !result) {
       return false
     }
-    console.log('lobby result', result)
     return result
+  }
+
+  export async function searchLobby(
+    params: SearchLobbyParams,
+  ): Promise<LobbySearchResponse | false> {
+    const { lobbyPath, ...queryParams } = params
+    const [err, result] = await asyncDo(
+      $http<LobbySearchResponse>('get', `/api/lobby/${lobbyPath}/search`, queryParams),
+    )
+    if (!isResponseOK(err, result) || !result) {
+      return false
+    }
+    return result
+  }
+
+  // Phase 5 完整實作
+  export function getGameLaunchUrl(_params: GameLaunchParams): string {
+    return ''
   }
 }

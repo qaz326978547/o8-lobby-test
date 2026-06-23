@@ -9,6 +9,7 @@ defineProps<{
 
 const emit = defineEmits<{
   'open-search': []
+  'select-platform': [id: string]
 }>()
 
 const { t } = useI18n()
@@ -22,6 +23,7 @@ const { t } = useI18n()
         :key="item.id"
         class="game-platform-nav__item"
         :class="{ 'game-platform-nav__item--active': item.id === activePlatformId }"
+        @click="emit('select-platform', item.id)"
       >
         <img
           :src="item.imagePath"

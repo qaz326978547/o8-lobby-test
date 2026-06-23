@@ -18,10 +18,6 @@ const capsuleBg = props.capsuleColor === 'red' ? '#ce2727' : '#35bd13'
     </div>
     <div class="game-card__footer">
       <span class="game-card__title">{{ name }}</span>
-      <div class="game-card__capsule" :style="{ background: capsuleBg }">
-        <span class="game-card__value">{{ value }}</span>
-        <img class="game-card__icon" src="/assets/images/icons/arrow-up.png" alt="" />
-      </div>
     </div>
   </div>
 </template>

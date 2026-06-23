@@ -1,8 +1,6 @@
 import axios, { type AxiosRequestConfig, type Method } from 'axios'
 
-export const apiBaseUrl = import.meta.env.DEV
-  ? '/api'
-  : (import.meta.env.VITE_API_BASE as string) || 'https://frontendwebsite.ugsdev.com/api'
+export const apiBaseUrl = (import.meta.env.VITE_UGS_API_BASE as string) || ''
 
 const apiTimeoutSec = 10
 
@@ -51,7 +49,7 @@ export function isResponseOK(err: any, result: any, alertError: boolean = false)
       } else {
         message = errData.message
         try {
-          Object.values(errData.errors || {}).forEach((e) => {
+          Object.values(errData.errors || {}).forEach((e: any) => {
             message += `<br>${e[0]}`
           })
         } catch (err) {

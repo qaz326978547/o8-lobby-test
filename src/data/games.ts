@@ -39,4 +39,4 @@ export const gameCards: GameCard[] = [
   },
 ]
 
-export const carouselPages: GameCard[][] = [gameCards, [...gameCards]]
+export const carouselPages: GameCard[][] = [gameCards, [...gameCards], [...gameCards]]

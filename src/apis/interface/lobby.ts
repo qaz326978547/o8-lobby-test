@@ -76,6 +76,7 @@ export interface Game {
   betlimits: unknown[]
   urls: unknown[]
   gametype: number
+  gametypename?: string
   ugsgameid: string
   supportquickfundin: boolean
   supportiframe: boolean
@@ -118,4 +119,61 @@ export interface Player {
   showquickfundinicon: boolean
   isproxywallet: boolean
   idletokenminutes: number
+}
+
+// ─── 搜尋 API ────────────────────────────────────────────────────────────────
+
+export interface PaginationResult<T> {
+  items: T[]
+  offset: number
+  totalCount: number
+  hasMore: boolean
+}
+
+export interface GameSearchItem {
+  id: string
+  name: string
+  code: string
+  providercode: string
+  iconurl: string
+}
+
+export interface ProviderSearchItem {
+  code: string
+  name: string
+  shortname: string
+  iconurl: string
+}
+
+export interface GameTypeSearchItem {
+  code: string
+  name: string
+  gamecount: number
+}
+
+export interface LobbySearchResponse {
+  keyword: string
+  games: PaginationResult<GameSearchItem>
+  providers: PaginationResult<ProviderSearchItem>
+  gameTypes: PaginationResult<GameTypeSearchItem>
+}
+
+// ─── API 呼叫參數 ─────────────────────────────────────────────────────────────
+
+export interface SearchLobbyParams {
+  lobbyPath: string
+  token: string
+  keyword: string
+  pageSize?: number
+  gamesOffset?: number
+  providersOffset?: number
+  gameTypesOffset?: number
+}
+
+export interface GameLaunchParams {
+  token: string
+  gpcode: string
+  gcode: string
+  betlimitid?: string
+  lang?: string
 }

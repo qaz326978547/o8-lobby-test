@@ -66,7 +66,7 @@ onUnmounted(() => {
   <section class="game-section">
     <div class="game-section__header">
       <img class="game-section__icon" :src="`/assets/images/icons/${props.gameType}.png`" alt="" />
-      <h2 class="game-section__title">{{ t(props.titleKey) }}</h2>
+      <h2 class="game-section_title">{{ t(props.titleKey) }}</h2>
     </div>
 
     <div ref="carouselRef" class="game-section__carousel">
@@ -98,6 +98,11 @@ onUnmounted(() => {
 <style scoped lang="scss">
 .game-section {
   padding: 16px;
+
+  &_title {
+    font-size: 18px;
+    color: #1a1a1a;
+  }
 
   &__icon {
     width: 24px;

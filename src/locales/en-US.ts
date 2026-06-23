@@ -10,6 +10,15 @@ export default {
     search: {
       placeholder: 'Games, Providers, Categories',
       clear: 'Clear',
+      title: 'Search',
+      emptyState: 'Woo... Nothing here yet',
+      searching: 'Searching...',
+      noResults: 'No results found',
+      sections: {
+        games: 'Games',
+        providers: 'Providers',
+        gameTypes: 'Game Types',
+      },
       tags: {
         slots: 'Slots',
       },
@@ -18,6 +27,7 @@ export default {
   common: {
     actions: {
       backToTop: 'Back to top',
+      back: 'Back',
     },
     accessibility: {
       openMenu: 'Open menu',
