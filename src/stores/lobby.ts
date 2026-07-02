@@ -67,11 +67,11 @@ export const useLobbyStore = defineStore('lobby', () => {
   })
 
   const LobbyGameList = computed<Game[]>(() => {
-    const games: Game[] = []
-    LobbyGameGroup.value.forEach((group) => {
-      games.push(...group.games)
-    })
-    return games
+    if (!lobbyData.value) return []
+    const allGroup = lobbyData.value.Lobby.Data.groups
+      .filter((g) => g.isvisible)
+      .find((g) => g.code === 'All')
+    return allGroup?.games ?? []
   })
 
   const LobbyGameProviders = computed<GameProvider[]>(() => {
@@ -124,7 +124,7 @@ export const useLobbyStore = defineStore('lobby', () => {
   async function executeSearch(keyword: string): Promise<void> {
     if (!keyword.trim()) return
     searchKeyword.value = keyword
-    await searchLobby({ lobbyPath: 'mobile', token: token.value ?? '', keyword })
+    await searchLobby({ lobbyPath: 'O8_Mobile_Lobby_test', token: token.value ?? '', keyword })
     searchResultMode.value = true
   }
 

@@ -70,10 +70,13 @@ onUnmounted(() => {
     </div>
 
     <div ref="carouselRef" class="game-section__carousel">
-      <Transition name="fade" mode="out-in">
-        <div :key="currentPage" class="game-section__grid">
+      <div
+        class="game-section__slides"
+        :style="{ transform: `translateX(-${currentPage * 100}%)` }"
+      >
+        <div v-for="(page, idx) in props.pages" :key="idx" class="game-section__grid">
           <GameCardComponent
-            v-for="card in props.pages[currentPage]"
+            v-for="card in page"
             :key="card.id"
             :image-path="card.imagePath"
             :name="card.name"
@@ -81,7 +84,7 @@ onUnmounted(() => {
             :capsule-color="card.capsuleColor"
           />
         </div>
-      </Transition>
+      </div>
     </div>
 
     <div class="game-section__indicators">
@@ -124,10 +127,16 @@ onUnmounted(() => {
 
   &__carousel {
     min-height: 240px;
-    position: relative;
+    overflow: hidden;
+  }
+
+  &__slides {
+    display: flex;
+    transition: transform 0.3s ease;
   }
 
   &__grid {
+    flex: 0 0 100%;
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 10px;
@@ -153,13 +162,5 @@ onUnmounted(() => {
   }
 }
 
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.4s ease;
-}
 
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
 </style>

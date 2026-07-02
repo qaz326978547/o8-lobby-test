@@ -92,15 +92,84 @@
 
       <!-- Discover 預設（最低優先） -->
       <template v-else>
+        <!-- Hot Games: API data → clickable carousel; no data → GameSection mock -->
+        <section v-if="hotGames.length > 0" class="game-section">
+          <div class="game-section__header">
+            <img class="game-section__icon" src="/assets/images/icons/hotGames.png" alt="" />
+            <h2 class="game-section_title">{{ t('home.sections.hotGames') }}</h2>
+          </div>
+          <div ref="hotCarouselRef" class="game-section__carousel">
+            <div
+              class="game-section__slides"
+              :style="{ transform: `translateX(-${hotCurrentPage * 100}%)` }"
+            >
+              <div v-for="(page, idx) in hotGamePages" :key="idx" class="game-section__grid">
+                <GameCard
+                  v-for="card in page"
+                  :key="card.id"
+                  :image-path="card.imagePath"
+                  :name="card.name"
+                  :value="card.value"
+                  :capsule-color="card.capsuleColor"
+                  @click="onClickHotGame(card.id)"
+                />
+              </div>
+            </div>
+          </div>
+          <div class="game-section__indicators">
+            <div
+              v-for="(_, idx) in hotGamePages"
+              :key="idx"
+              class="game-section__progress-bar"
+              :class="{ 'game-section__progress-bar--active': idx === hotCurrentPage }"
+            />
+          </div>
+        </section>
         <GameSection
+          v-else
           :title-key="'home.sections.hotGames'"
           :pages="carouselPages"
-          :gameType="'hotGames'"
+          game-type="hotGames"
         />
+
+        <!-- New Games: API data → clickable carousel; no data → GameSection mock -->
+        <section v-if="newGames.length > 0" class="game-section">
+          <div class="game-section__header">
+            <img class="game-section__icon" src="/assets/images/icons/newGames.png" alt="" />
+            <h2 class="game-section_title">{{ t('home.sections.newGames') }}</h2>
+          </div>
+          <div ref="newCarouselRef" class="game-section__carousel">
+            <div
+              class="game-section__slides"
+              :style="{ transform: `translateX(-${newCurrentPage * 100}%)` }"
+            >
+              <div v-for="(page, idx) in newGamePages" :key="idx" class="game-section__grid">
+                <GameCard
+                  v-for="card in page"
+                  :key="card.id"
+                  :image-path="card.imagePath"
+                  :name="card.name"
+                  :value="card.value"
+                  :capsule-color="card.capsuleColor"
+                  @click="onClickNewGame(card.id)"
+                />
+              </div>
+            </div>
+          </div>
+          <div class="game-section__indicators">
+            <div
+              v-for="(_, idx) in newGamePages"
+              :key="idx"
+              class="game-section__progress-bar"
+              :class="{ 'game-section__progress-bar--active': idx === newCurrentPage }"
+            />
+          </div>
+        </section>
         <GameSection
+          v-else
           :title-key="'home.sections.newGames'"
           :pages="carouselPages"
-          :gameType="'newGames'"
+          game-type="newGames"
         />
       </template>
     </div>
@@ -109,7 +178,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import type { GamePlatformItem } from '@/data/platforms'
@@ -118,7 +187,7 @@ import { resolveProviderDisplay } from '@/utils/provider'
 import { carouselPages } from '@/data/games'
 import type { GameCard as GameCardData } from '@/data/games'
 import type { SearchTag } from '@/components/SearchPanel.vue'
-import type { LobbyGroup } from '@/apis/interface/lobby'
+import type { LobbyGroup, Game } from '@/apis/interface/lobby'
 import AppHeader from '@/components/AppHeader.vue'
 import HeroBanner from '@/components/HeroBanner.vue'
 import GamePlatformNav from '@/components/GamePlatformNav.vue'
@@ -228,6 +297,147 @@ const navItems = computed<GamePlatformItem[]>(() => {
       isDiscover: false,
     })),
   ]
+})
+
+// ─── Hot/New API carousel ─────────────────────────────────────────────────────
+
+const hotCurrentPage = ref(0)
+const newCurrentPage = ref(0)
+const hotCarouselRef = ref<HTMLElement | null>(null)
+const newCarouselRef = ref<HTMLElement | null>(null)
+let hotIntervalId: ReturnType<typeof setInterval> | undefined
+let newIntervalId: ReturnType<typeof setInterval> | undefined
+let hotTouchStartX = 0
+let hotTouchStartY = 0
+let newTouchStartX = 0
+let newTouchStartY = 0
+
+const hotGames = computed<Game[]>(
+  () => lobbyStore.lobbyData?.Lobby.Data.groups.find((g) => g.code === 'Hot')?.games ?? [],
+)
+const newGames = computed<Game[]>(
+  () => lobbyStore.lobbyData?.Lobby.Data.groups.find((g) => g.code === 'New')?.games ?? [],
+)
+
+function gamesToCardPages(games: Game[], pageSize = 4): GameCardData[][] {
+  const pages: GameCardData[][] = []
+  for (let i = 0; i < games.length; i += pageSize) {
+    pages.push(
+      games.slice(i, i + pageSize).map((game, j) => ({
+        id: game.id,
+        name: game.name,
+        imagePath: resolveGameImagePath(game.iconurl, i + j),
+        value: 0,
+        capsuleColor: 'red' as const,
+      })),
+    )
+  }
+  return pages
+}
+
+const hotGamePages = computed<GameCardData[][]>(() =>
+  hotGames.value.length > 0 ? gamesToCardPages(hotGames.value) : carouselPages,
+)
+const newGamePages = computed<GameCardData[][]>(() =>
+  newGames.value.length > 0 ? gamesToCardPages(newGames.value) : carouselPages,
+)
+
+function onClickDiscoverGame(game: Game) {
+  const token = lobbyStore.token ?? getTokenFromSession() ?? ''
+  launchGame(game, token, import.meta.env.VITE_UGS_FRONTEND_ORIGIN ?? '', router.push)
+}
+
+function onClickHotGame(cardId: string) {
+  const game = hotGames.value.find((g) => g.id === cardId)
+  if (!game) return
+  onClickDiscoverGame(game)
+}
+
+function onClickNewGame(cardId: string) {
+  const game = newGames.value.find((g) => g.id === cardId)
+  if (!game) return
+  onClickDiscoverGame(game)
+}
+
+function startHotAutoPlay() {
+  clearInterval(hotIntervalId)
+  hotIntervalId = setInterval(() => {
+    hotCurrentPage.value = (hotCurrentPage.value + 1) % hotGamePages.value.length
+  }, 5000)
+}
+
+function startNewAutoPlay() {
+  clearInterval(newIntervalId)
+  newIntervalId = setInterval(() => {
+    newCurrentPage.value = (newCurrentPage.value + 1) % newGamePages.value.length
+  }, 5000)
+}
+
+function onHotTouchStart(e: TouchEvent) {
+  hotTouchStartX = e.touches[0]?.clientX ?? 0
+  hotTouchStartY = e.touches[0]?.clientY ?? 0
+}
+function onHotTouchMove(e: TouchEvent) {
+  const dx = Math.abs((e.touches[0]?.clientX ?? hotTouchStartX) - hotTouchStartX)
+  const dy = Math.abs((e.touches[0]?.clientY ?? hotTouchStartY) - hotTouchStartY)
+  if (dx > dy) e.preventDefault()
+}
+function onHotTouchEnd(e: TouchEvent) {
+  const deltaX = (e.changedTouches[0]?.clientX ?? hotTouchStartX) - hotTouchStartX
+  if (Math.abs(deltaX) < 50) return
+  hotCurrentPage.value =
+    deltaX < 0
+      ? (hotCurrentPage.value + 1) % hotGamePages.value.length
+      : (hotCurrentPage.value - 1 + hotGamePages.value.length) % hotGamePages.value.length
+  startHotAutoPlay()
+}
+
+function onNewTouchStart(e: TouchEvent) {
+  newTouchStartX = e.touches[0]?.clientX ?? 0
+  newTouchStartY = e.touches[0]?.clientY ?? 0
+}
+function onNewTouchMove(e: TouchEvent) {
+  const dx = Math.abs((e.touches[0]?.clientX ?? newTouchStartX) - newTouchStartX)
+  const dy = Math.abs((e.touches[0]?.clientY ?? newTouchStartY) - newTouchStartY)
+  if (dx > dy) e.preventDefault()
+}
+function onNewTouchEnd(e: TouchEvent) {
+  const deltaX = (e.changedTouches[0]?.clientX ?? newTouchStartX) - newTouchStartX
+  if (Math.abs(deltaX) < 50) return
+  newCurrentPage.value =
+    deltaX < 0
+      ? (newCurrentPage.value + 1) % newGamePages.value.length
+      : (newCurrentPage.value - 1 + newGamePages.value.length) % newGamePages.value.length
+  startNewAutoPlay()
+}
+
+watch(hotCarouselRef, (el) => {
+  if (el) {
+    el.addEventListener('touchstart', onHotTouchStart, { passive: true })
+    el.addEventListener('touchmove', onHotTouchMove, { passive: false })
+    el.addEventListener('touchend', onHotTouchEnd, { passive: true })
+    startHotAutoPlay()
+  }
+})
+
+watch(newCarouselRef, (el) => {
+  if (el) {
+    el.addEventListener('touchstart', onNewTouchStart, { passive: true })
+    el.addEventListener('touchmove', onNewTouchMove, { passive: false })
+    el.addEventListener('touchend', onNewTouchEnd, { passive: true })
+    startNewAutoPlay()
+  }
+})
+
+onUnmounted(() => {
+  clearInterval(hotIntervalId)
+  clearInterval(newIntervalId)
+  hotCarouselRef.value?.removeEventListener('touchstart', onHotTouchStart)
+  hotCarouselRef.value?.removeEventListener('touchmove', onHotTouchMove)
+  hotCarouselRef.value?.removeEventListener('touchend', onHotTouchEnd)
+  newCarouselRef.value?.removeEventListener('touchstart', onNewTouchStart)
+  newCarouselRef.value?.removeEventListener('touchmove', onNewTouchMove)
+  newCarouselRef.value?.removeEventListener('touchend', onNewTouchEnd)
 })
 
 // ─── T025: GameCard adapter ───────────────────────────────────────────────────
@@ -411,6 +621,64 @@ onMounted(async () => {
 
     &:active {
       background: #e0e0e0;
+    }
+  }
+}
+
+.game-section {
+  padding: 16px;
+
+  &_title {
+    font-size: 18px;
+    color: #1a1a1a;
+  }
+
+  &__icon {
+    width: 24px;
+    height: 24px;
+    margin-right: 8px;
+    object-fit: contain;
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+
+  &__carousel {
+    min-height: 240px;
+    overflow: hidden;
+  }
+
+  &__slides {
+    display: flex;
+    transition: transform 0.3s ease;
+  }
+
+  &__grid {
+    flex: 0 0 100%;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  &__indicators {
+    display: flex;
+    justify-content: center;
+    margin-top: 12px;
+  }
+
+  &__progress-bar {
+    flex: 1;
+    max-width: 40px;
+    height: 3px;
+    background: rgba(174, 134, 64, 0.2);
+    border-radius: 2px;
+    transition: background 0.3s ease;
+
+    &--active {
+      background: #ae8640;
     }
   }
 }
