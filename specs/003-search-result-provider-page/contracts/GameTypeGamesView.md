@@ -1,8 +1,8 @@
 # UI 合約：GameTypeGamesView.vue
 
 **元件路徑**：`src/views/GameTypeGamesView.vue`  
-**路由**：`/search/game-type/:code?keyword={keyword}`  
-**日期**：2026-06-21（更新：2026-06-22）
+**路由**：`/search/game-type/:code`（keyword query 為選用，不影響邏輯）  
+**日期**：2026-06-21（更新：2026-06-23）
 
 ---
 
@@ -11,7 +11,7 @@
 | 來源 | 名稱 | 型別 | 用途 |
 |------|------|------|------|
 | `route.params.code` | `code` | `string` | 遊戲類型代碼，例：`Slot` |
-| `route.query.keyword` | `keyword` | `string \| undefined` | 保留的搜尋關鍵字（由 SearchPanel 傳入，現階段未用於返回導航） |
+| `route.query.keyword` | `keyword` | `string \| undefined` | 選用：由上游攜帶，本頁不主動使用；不以此呼叫 API |
 
 ---
 
@@ -88,7 +88,7 @@ const gameCards = computed(() =>
 
 ## 入口
 
-使用者從首頁 `/` 的 **SearchPanel overlay** 搜尋結果中點擊 gameType，導航至本頁。
+使用者從首頁 `/` 的**主內容區搜尋結果**（`searchResultMode === true`）中點擊 gameType chip，導航至本頁。SearchPanel overlay **不**直接提供此入口（搜尋結果已移至首頁主內容區）。
 
 ---
 
@@ -112,10 +112,12 @@ GameTypeGamesView
 
 | 動作 | 結果 |
 |------|------|
-| 點擊返回（←）| ① `lobbyStore.searchPanelShouldRestore = true` → ② `router.push('/')` |
-| 點擊遊戲卡片 | Phase 5 實作（預留結構） |
+| 點擊返回（←）| `router.push('/')` |
+| 點擊遊戲卡片 | 呼叫 `launchGame(game, token, frontendOrigin, router.push)` |
 
-**SearchPanel 狀態還原**：返回前設定 `searchPanelShouldRestore = true`，HomeView `onMounted` 偵測此 flag 後自動展開 SearchPanel，從 `lobbyStore.searchKeyword` 還原輸入框 keyword，`searchResult` 保留於 store 直接顯示，不重新呼叫 API。若 store 狀態已遺失，SearchPanel 以空 keyword 展開，不崩潰。
+**返回行為（2026-06-23 修正）**：返回按鈕只執行 `router.push('/')`，**不設定任何 flag**。返回後，`lobbyStore.searchResultMode` 仍為 `true`（store 保留），首頁 template reactive 偵測後直接在主內容區顯示搜尋結果；**SearchPanel overlay 不自動展開**；**未重新呼叫 API**（Network tab 確認）。若 `lobbyStore.searchResult` 為 `null`（store 已遺失），首頁顯示 Discover 預設，不崩潰。
+
+**遊戲卡片點擊行為（2026-06-25 新增）**：同 `ProviderGamesView.md`。使用 `launchGame(game, token, frontendOrigin, router.push)` helper；`token` 從 `lobbyStore.token ?? getTokenFromSession()`；`frontendOrigin` 從 `import.meta.env.VITE_UGS_FRONTEND_ORIGIN`；`supportiframe` 決定分流（iframe vs redirect）；launchUrl 不入 route query。
 
 ---
 

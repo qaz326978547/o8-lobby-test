@@ -19,7 +19,8 @@ export const useLobbyStore = defineStore('lobby', () => {
   const searchResult = ref<LobbySearchResponse | null>(null)
   const isSearching = ref(false)
   const searchKeyword = ref<string>('')
-  const searchPanelShouldRestore = ref<boolean>(false)
+  const searchResultMode = ref<boolean>(false)
+  const searchError = ref<string | null>(null)
 
   // ─── Actions ────────────────────────────────────────────────────────────────
 
@@ -27,7 +28,9 @@ export const useLobbyStore = defineStore('lobby', () => {
     token.value = t
   }
 
-  async function fetchLobbyData(lobbyPath: 'mobile' | 'desktop' | 'o8' = 'mobile'): Promise<void> {
+  async function fetchLobbyData(
+    lobbyPath: 'mobile' | 'desktop' | 'O8_Mobile_Lobby_test' = 'O8_Mobile_Lobby_test',
+  ): Promise<void> {
     if (!token.value) return
     const result = await LobbyApi.getLobbyData(lobbyPath, token.value)
     if (result) {
@@ -118,6 +121,19 @@ export const useLobbyStore = defineStore('lobby', () => {
     return false
   }
 
+  async function executeSearch(keyword: string): Promise<void> {
+    if (!keyword.trim()) return
+    searchKeyword.value = keyword
+    await searchLobby({ lobbyPath: 'mobile', token: token.value ?? '', keyword })
+    searchResultMode.value = true
+  }
+
+  function clearSearchResult(): void {
+    searchResult.value = null
+    searchResultMode.value = false
+    searchKeyword.value = ''
+  }
+
   function searchNextPage(segment: 'games' | 'providers' | 'gameTypes'): number {
     const seg = searchResult.value?.[segment]
     if (!seg) return 0
@@ -130,10 +146,13 @@ export const useLobbyStore = defineStore('lobby', () => {
     searchResult,
     isSearching,
     searchKeyword,
-    searchPanelShouldRestore,
+    searchResultMode,
+    searchError,
     setToken,
     fetchLobbyData,
     searchLobby,
+    executeSearch,
+    clearSearchResult,
     LobbyGameGroup,
     LobbyGameList,
     LobbyGameProviders,

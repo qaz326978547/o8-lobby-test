@@ -19,6 +19,10 @@ const router = createRouter({
       path: '/search/game-type/:code',
       component: () => import('@/views/GameTypeGamesView.vue'),
     },
+    {
+      path: '/game-frame',
+      component: () => import('@/views/GameFrameView.vue'),
+    },
   ],
 })
 

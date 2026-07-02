@@ -5,6 +5,8 @@ import { useRoute, useRouter } from 'vue-router'
 import { useLobbyStore } from '@/stores/lobby'
 import { resolveGameImagePath } from '@/utils/url'
 import { resolveProviderDisplay } from '@/utils/provider'
+import { launchGame } from '@/utils/gameLaunch'
+import { getTokenFromSession } from '@/utils/tokenSession'
 import AppHeader from '@/components/AppHeader.vue'
 import GameCard from '@/components/GameCard.vue'
 import EmptyState from '@/components/EmptyState.vue'
@@ -39,6 +41,14 @@ const gameCards = computed(() =>
     capsuleColor: 'red' as const,
   })),
 )
+
+function onClickGame(gameId: string) {
+  const game = lobbyStore.LobbyGameList.find((g) => g.id === gameId)
+  console.log('onClickGame', gameId, game)
+  if (!game) return
+  const token = lobbyStore.token ?? getTokenFromSession() ?? ''
+  launchGame(game, token, import.meta.env.VITE_UGS_FRONTEND_ORIGIN ?? '', router.push)
+}
 </script>
 
 <template>
@@ -50,7 +60,7 @@ const gameCards = computed(() =>
           type="button"
           class="provider-games-view__back"
           :aria-label="t('common.actions.back')"
-          @click="() => { lobbyStore.searchPanelShouldRestore = true; router.push('/') }"
+          @click="() => router.push('/')"
         >
           ←
         </button>
@@ -72,6 +82,7 @@ const gameCards = computed(() =>
           :name="g.name"
           :value="g.value"
           :capsule-color="g.capsuleColor"
+          @click="onClickGame(g.id)"
         />
       </div>
     </div>

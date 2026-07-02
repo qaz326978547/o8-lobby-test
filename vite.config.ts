@@ -14,11 +14,10 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '/ugs-api': {
+      '/api': {
         target: 'https://frontendwebsite.ugsdev.com',
         changeOrigin: true,
         secure: false,
-        rewrite: (path) => path.replace(/^\/ugs-api/, ''),
       },
     },
   },

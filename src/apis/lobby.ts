@@ -8,7 +8,7 @@ import type {
 
 export namespace LobbyApi {
   export async function getLobbyData(
-    lobbyPath: 'mobile' | 'desktop' | 'o8' = 'mobile',
+    lobbyPath: 'mobile' | 'desktop' | 'O8_Mobile_Lobby_test' = 'mobile',
     token: string,
   ): Promise<ILobbyResponse | false> {
     const [err, result] = await asyncDo(
