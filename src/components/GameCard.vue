@@ -27,7 +27,7 @@ const capsuleBg = props.capsuleColor === 'red' ? '#ce2727' : '#35bd13'
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-
+  cursor: pointer;
   &__image {
     width: 100%;
     overflow: hidden;
