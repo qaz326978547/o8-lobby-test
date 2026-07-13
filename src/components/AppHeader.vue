@@ -24,13 +24,13 @@ const { t } = useI18n()
       >
         <span class="app-header__locale-label">{{ currentLocale === 'zh-TW' ? 'EN' : '中' }}</span>
       </button>
-      <button
+      <!-- <button
         class="app-header__btn"
         type="button"
         :aria-label="t('common.accessibility.openMenu')"
       >
         <img src="/assets/images/icons/menu.png" :alt="t('common.accessibility.openMenu')" />
-      </button>
+      </button> -->
     </div>
   </header>
 </template>
