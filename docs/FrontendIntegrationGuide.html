@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>遊戲大廳 API 串接說明（前後端分離）</title>
+<style>
+  :root {
+    --primary: #2563eb;
+    --bg: #f8fafc;
+    --card-bg: #ffffff;
+    --border: #e2e8f0;
+    --code-bg: #0f172a;
+    --code-fg: #e2e8f0;
+    --warn-bg: #fff7ed;
+    --warn-border: #fb923c;
+    --ok-bg: #f0fdf4;
+    --ok-border: #22c55e;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Segoe UI", "PingFang TC", "Microsoft JhengHei", sans-serif;
+    background: var(--bg);
+    color: #1e293b;
+    line-height: 1.7;
+    margin: 0;
+    padding: 0;
+  }
+  .container {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 32px 20px 80px;
+  }
+  header {
+    margin-bottom: 32px;
+  }
+  header h1 {
+    font-size: 28px;
+    margin-bottom: 8px;
+  }
+  header p {
+    color: #64748b;
+    margin: 4px 0;
+  }
+  nav {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 32px;
+  }
+  nav h2 {
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #64748b;
+    margin: 0 0 8px;
+  }
+  nav ul {
+    margin: 0;
+    padding-left: 20px;
+    columns: 2;
+  }
+  nav a {
+    color: var(--primary);
+    text-decoration: none;
+    font-size: 14px;
+  }
+  nav a:hover { text-decoration: underline; }
+
+  section {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px 28px;
+    margin-bottom: 24px;
+  }
+  h2 {
+    font-size: 20px;
+    border-left: 4px solid var(--primary);
+    padding-left: 10px;
+    margin-top: 0;
+  }
+  h3 {
+    font-size: 16px;
+    margin-top: 28px;
+    color: #0f172a;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+    font-size: 14px;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px 10px;
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    background: #f1f5f9;
+  }
+  code {
+    background: #eef2ff;
+    color: #4338ca;
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-size: 0.9em;
+  }
+  pre {
+    background: var(--code-bg);
+    color: var(--code-fg);
+    padding: 16px;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  pre code {
+    background: none;
+    color: inherit;
+    padding: 0;
+  }
+  .step-list {
+    counter-reset: step;
+    list-style: none;
+    padding-left: 0;
+  }
+  .step-list > li {
+    counter-increment: step;
+    position: relative;
+    padding: 12px 0 12px 44px;
+    border-bottom: 1px dashed var(--border);
+  }
+  .step-list > li:last-child { border-bottom: none; }
+  .step-list > li::before {
+    content: counter(step);
+    position: absolute;
+    left: 0;
+    top: 10px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: #fff;
+    font-weight: bold;
+    text-align: center;
+    line-height: 28px;
+    font-size: 14px;
+  }
+  .badge {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 2px 8px;
+    border-radius: 999px;
+    margin-left: 6px;
+  }
+  .badge-todo {
+    background: var(--warn-bg);
+    color: #c2410c;
+    border: 1px solid var(--warn-border);
+  }
+  .badge-done {
+    background: var(--ok-bg);
+    color: #15803d;
+    border: 1px solid var(--ok-border);
+  }
+  .note {
+    background: var(--warn-bg);
+    border: 1px solid var(--warn-border);
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin: 12px 0;
+    font-size: 14px;
+  }
+  .note strong { color: #c2410c; }
+  footer {
+    text-align: center;
+    color: #94a3b8;
+    font-size: 13px;
+    margin-top: 40px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1>遊戲大廳 API 串接說明（前後端分離）</h1>
+    <p>對應規格文件：<code>Readme/SpecDrivenDevelopment/game-lobby/GameLobbySpec.md</code>（v0.8）</p>
+    <p>適用對象：擁有自己網址、自己前端的合作方／前端團隊，需呼叫遊戲大廳列表、搜尋、啟動遊戲 API。</p>
+  </header>
+
+  <nav>
+    <h2>目錄</h2>
+    <ul>
+      <li><a href="#overview">整體流程概觀</a></li>
+      <li><a href="#step1">Step 1：取得 token</a></li>
+      <li><a href="#step2">Step 2：組出自己的前端網址</a></li>
+      <li><a href="#api-lobby">API：大廳列表</a></li>
+      <li><a href="#api-search">API：搜尋（分頁 / 無限滾動）</a></li>
+      <li><a href="#api-launch">API：啟動遊戲</a></li>
+      <li><a href="#cors">CORS 注意事項</a></li>
+      <li><a href="#token">Token 限制</a></li>
+      <li><a href="#errors">錯誤處理</a></li>
+    </ul>
+  </nav>
+
+  <section id="overview">
+    <h2>整體流程概觀</h2>
+    <p>跟「UGS 自己的大廳頁面」不同，前後端分離的合作方<strong>不會經過 UGS 的 302 轉址流程</strong>。流程改成：</p>
+    <ol class="step-list">
+      <li><strong>合作方後端</strong>自行向 Brand API 取得 player 的 <code>token</code>（即 <code>authtoken</code>）。</li>
+      <li>合作方後端把 <code>token</code> 帶到<strong>自己的前端網址</strong>，例如 <code>https://your-frontend.example.com/lobby?token=xxx</code>。</li>
+      <li><strong>前端（瀏覽器）</strong>從網址上的 query string 取出 <code>token</code>，之後呼叫 UGS 的大廳 API（列表 / 搜尋 / 啟動遊戲）時，<strong>每一支 API 都要帶上這個 <code>token</code></strong>（query string）。</li>
+    </ol>
+    <pre><code>瀏覽器網址：https://your-frontend.example.com/lobby?token=eyJxxx...
+
+前端拿到 token 後呼叫：
+GET {UgsFrontendWebsiteUrl}/api/lobby/{lobbyPath}?token=eyJxxx...
+GET {UgsFrontendWebsiteUrl}/api/lobby/{lobbyPath}/search?token=eyJxxx...&amp;keyword=SG&amp;pageSize=10
+GET {UgsFrontendWebsiteUrl}/gamelauncher?token=eyJxxx...&amp;gpcode=SG&amp;gcode=SGCaishen&amp;betlimitid=1&amp;lang=zh-CN</code></pre>
+    <div class="note">
+      <strong>重點：</strong>「自己的前端網址」是合作方自行決定、自行部署的，UGS <strong>不需要、也不會</strong>登錄這個網址。UGS 只負責「給 token」與「吃 token 回資料」。
+    </div>
+  </section>
+
+  <section id="step1">
+    <h2>Step 1：取得 token</h2>
+    <p>由<strong>合作方後端</strong>（不是瀏覽器）執行，流程與既有 Brand 整合方式相同：</p>
+    <table>
+      <tr><th>步驟</th><th>說明</th></tr>
+      <tr>
+        <td>1. 取得 Brand Token</td>
+        <td><code>POST {BrandApiUrl}/connect/token</code>（<code>grant_type=client_credentials</code>），取得 <code>access_token</code></td>
+      </tr>
+      <tr>
+        <td>2. AuthorizePlayer</td>
+        <td>用 <code>access_token</code> 呼叫 AuthorizePlayer API，取得該玩家的 <code>authtoken</code></td>
+      </tr>
+    </table>
+    <p>這個 <code>authtoken</code> 就是後續所有大廳 API 要帶的 <code>token</code> 參數。</p>
+  </section>
+
+  <section id="step2">
+    <h2>Step 2：組出自己的前端網址</h2>
+    <p>合作方後端把 <code>authtoken</code> 帶到自己的前端入口：</p>
+    <pre><code>https://your-frontend.example.com/{lobbyPath}?token={authtoken}</code></pre>
+    <p><code>{lobbyPath}</code> 是大廳代碼（例如 <code>desktop</code>、<code>o8</code>），由 UGS 提供／約定。</p>
+  </section>
+
+  <section id="api-lobby">
+    <h2>API：大廳列表 <span class="badge badge-done">既有</span></h2>
+    <p><code>GET {UgsFrontendWebsiteUrl}/api/lobby/{lobbyPath}?token={token}</code></p>
+    <p>回傳整個大廳資料：Banner 輪播、分類頁籤、各區塊（熱門遊戲 / 新品推薦）與遊戲卡片清單等。前端依回傳的 <code>groups[].isvisible</code> / <code>order</code> 渲染畫面。</p>
+  </section>
+
+  <section id="api-search">
+    <h2>API：搜尋（分頁 / 無限滾動） <span class="badge badge-done">已實作</span></h2>
+    <p><code>GET {UgsFrontendWebsiteUrl}/api/lobby/{lobbyPath}/search?token={token}&amp;keyword=...&amp;pageSize=...&amp;gamesOffset=...&amp;providersOffset=...&amp;gameTypesOffset=...</code></p>
+    <p>一個 <code>keyword</code> 同時搜尋「遊戲」「遊戲商」「遊戲類型」三種結果，<strong>各自獨立分頁</strong>，前端可分別對三段做無限滾動。</p>
+
+    <h3>Request 參數</h3>
+    <table>
+      <tr><th>欄位</th><th>位置</th><th>型別</th><th>必填</th><th>說明</th></tr>
+      <tr><td><code>lobbyPath</code></td><td>route</td><td>string</td><td>✓</td><td>大廳路徑</td></tr>
+      <tr><td><code>token</code></td><td>query</td><td>string</td><td>✓</td><td>玩家授權 token</td></tr>
+      <tr><td><code>keyword</code></td><td>query</td><td>string</td><td></td><td>關鍵字（空字串 → 三段皆回傳空結果）</td></tr>
+      <tr><td><code>pageSize</code></td><td>query</td><td>int</td><td></td><td>各段每頁筆數，預設 20，上限 100</td></tr>
+      <tr><td><code>gamesOffset</code></td><td>query</td><td>int</td><td></td><td><code>games</code> 段起始位置，預設 0</td></tr>
+      <tr><td><code>providersOffset</code></td><td>query</td><td>int</td><td></td><td><code>providers</code> 段起始位置，預設 0</td></tr>
+      <tr><td><code>gameTypesOffset</code></td><td>query</td><td>int</td><td></td><td><code>gameTypes</code> 段起始位置，預設 0</td></tr>
+    </table>
+
+    <h3>Response 結構</h3>
+    <p>每一段（<code>games</code> / <code>providers</code> / <code>gameTypes</code>）皆為相同的分頁結構：</p>
+    <table>
+      <tr><th>欄位</th><th>型別</th><th>說明</th></tr>
+      <tr><td><code>items</code></td><td>陣列</td><td>本頁資料</td></tr>
+      <tr><td><code>offset</code></td><td>int</td><td>本頁起始位置（即帶入的 <code>xxxOffset</code>）</td></tr>
+      <tr><td><code>totalCount</code></td><td>int</td><td>符合條件的總筆數（分頁前）</td></tr>
+      <tr><td><code>hasMore</code></td><td>bool</td><td>是否還有下一頁</td></tr>
+    </table>
+
+    <div class="note">
+      <strong>無限滾動規則：</strong>當某一段 <code>hasMore = true</code> 時，下一頁請求把該段的 <code>xxxOffset = offset + items.length</code>，其餘 offset 維持原值、<code>keyword</code> 不變即可。三段各自獨立，互不影響。
+    </div>
+
+    <h3>範例</h3>
+    <pre><code>第一頁：
+GET /api/lobby/o8/search?token=eyJ...&amp;keyword=SG&amp;pageSize=5
+
+games 還有更多時，下一頁：
+GET /api/lobby/o8/search?token=eyJ...&amp;keyword=SG&amp;pageSize=5&amp;gamesOffset=5&amp;providersOffset=1&amp;gameTypesOffset=0</code></pre>
+
+    <pre><code>{
+  "keyword": "SG",
+  "games": {
+    "items": [
+      {
+        "code": "SGCaishen",
+        "name": "財神到",
+        "providercode": "SG",
+        "providername": "Spade Gaming",
+        "providershortname": "SG",
+        "iconurl": "Content/images/v2.0.0/zh-CN/Game_SG_Caishen_{iconres}.jpg",
+        "gametype": 1,
+        "gametypename": "Slots",
+        "isjackpot": false,
+        "popularity": 87.5
+      }
+    ],
+    "offset": 0,
+    "totalCount": 12,
+    "hasMore": true
+  },
+  "providers": {
+    "items": [
+      {
+        "code": "SG",
+        "name": "Spade Gaming",
+        "shortname": "SG",
+        "iconurl": "Content/images/providers/SG.png",
+        "gamecount": 142
+      }
+    ],
+    "offset": 0,
+    "totalCount": 1,
+    "hasMore": false
+  },
+  "gameTypes": {
+    "items": [],
+    "offset": 0,
+    "totalCount": 0,
+    "hasMore": false
+  }
+}</code></pre>
+
+    <div class="note">
+      <strong>空結果情境：</strong><code>keyword</code> 為空、或 <code>token</code>/<code>lobbyPath</code> 無效，皆回傳 <strong>HTTP 200</strong> 與「三段皆空」（<code>items=[]</code>、<code>totalCount=0</code>、<code>hasMore=false</code>），不會丟例外或錯誤碼。前端只需處理「空陣列」畫面，不用特別 catch 錯誤。
+    </div>
+  </section>
+
+  <section id="api-launch">
+    <h2>API：啟動遊戲 <span class="badge badge-done">既有</span></h2>
+    <p><code>GET {UgsFrontendWebsiteUrl}/gamelauncher?token={token}&amp;gpcode={providercode}&amp;gcode={code}&amp;betlimitid=...&amp;lang=...</code></p>
+    <p>使用者點擊遊戲卡片時，帶卡片上的 <code>providercode</code>（<code>gpcode</code>）與 <code>code</code>（<code>gcode</code>）呼叫此 API，取得遊戲 URL 後以 iframe 載入或重導；若該遊戲商不支援 iframe（回傳會標示），改用整頁重導。</p>
+  </section>
+
+  <section id="cors">
+    <h2>CORS 注意事項 <span class="badge badge-todo">後端待辦</span></h2>
+    <p>因為前端網址跟 UGS API 不同網域，瀏覽器呼叫 API #1/#2/#3 屬於<strong>跨網域請求</strong>，需要 UGS 後端開啟 CORS 並把合作方的網域加入允許清單。</p>
+    <div class="note">
+      <strong>狀態：</strong>此項目目前尚未設定，已記錄在規格文件的待辦中。串接前請與後端團隊確認你的前端網域是否已加入 CORS 允許清單，否則瀏覽器會擋下請求（出現 CORS error，而不是 API 回傳錯誤）。
+    </div>
+  </section>
+
+  <section id="token">
+    <h2>Token 限制</h2>
+    <ul>
+      <li><code>token</code> 即 Brand AuthorizePlayer 回傳的 <code>authtoken</code>，<strong>單次/短效</strong>。</li>
+      <li>過期後的刷新機制<strong>目前未規劃</strong>：若 API 回傳 401（或其他授權失敗），代表 token 已失效。</li>
+      <li>處理方式：前端導回自己的登入頁，由<strong>合作方後端重新走 Step 1</strong>取得新的 <code>authtoken</code>，再產生新的 <code>?token=</code> 網址。</li>
+      <li>同一個 <code>token</code> 可重複用在多支 API（列表 / 搜尋 / 啟動遊戲），不需每支 API 換 token。</li>
+    </ul>
+  </section>
+
+  <section id="errors">
+    <h2>錯誤處理</h2>
+    <table>
+      <tr><th>情境</th><th>API 行為</th><th>前端建議</th></tr>
+      <tr><td>搜尋 keyword 為空</td><td>HTTP 200，三段皆空結果</td><td>當作「無結果」畫面顯示，不需特別處理</td></tr>
+      <tr><td>token 無效 / 過期</td><td>列表 / 搜尋：HTTP 200 + 空結果或無資料；啟動遊戲：可能 401</td><td>偵測到資料異常或 401 時，導回登入頁重新取得 token</td></tr>
+      <tr><td>跨網域被擋</td><td>瀏覽器顯示 CORS error，無法取得 response</td><td>確認網域已加入後端 CORS 允許清單</td></tr>
+    </table>
+  </section>
+
+  <footer>
+    本文件由 <code>GameLobbySpec.md</code>（v0.8）整理產生，內容如有出入以該規格文件為準。
+  </footer>
+
+</div>
+</body>
+</html>
