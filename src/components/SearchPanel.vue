@@ -82,7 +82,8 @@ function onClose() {
           :key="tag.id"
           class="search-panel__tag search-panel__tag--clickable"
           @click="onTagClick(tag)"
-        >{{ tag.label }}</span>
+          >{{ tag.label }}</span
+        >
       </div>
     </div>
   </div>

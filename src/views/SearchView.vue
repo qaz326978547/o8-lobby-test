@@ -111,9 +111,7 @@ onUnmounted(() => {
             :key="item.code"
             class="search-view__provider-item"
             @click="
-              router.push(
-                `/search/provider/${item.code}?keyword=${encodeURIComponent(keyword)}`,
-              )
+              router.push(`/search/provider/${item.code}?keyword=${encodeURIComponent(keyword)}`)
             "
           >
             <img
@@ -135,11 +133,10 @@ onUnmounted(() => {
               :key="gt.code"
               class="search-view__game-type-chip"
               @click="
-                router.push(
-                  `/search/game-type/${gt.code}?keyword=${encodeURIComponent(keyword)}`,
-                )
+                router.push(`/search/game-type/${gt.code}?keyword=${encodeURIComponent(keyword)}`)
               "
-            >{{ gt.name }}</span>
+              >{{ gt.name }}</span
+            >
           </div>
         </div>
 

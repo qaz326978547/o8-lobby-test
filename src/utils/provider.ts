@@ -12,7 +12,7 @@ export function resolveProviderDisplay(
   lobbyProviders: GameProvider[],
   searchProviders: ProviderSearchItem[],
 ): ProviderDisplay {
-  const fromLobby = lobbyProviders.find(p => p.code === code)
+  const fromLobby = lobbyProviders.find((p) => p.code === code)
   if (fromLobby) {
     return {
       code,
@@ -20,7 +20,7 @@ export function resolveProviderDisplay(
       iconPath: resolveIconUrl(fromLobby.iconurl),
     }
   }
-  const fromSearch = searchProviders.find(p => p.code === code)
+  const fromSearch = searchProviders.find((p) => p.code === code)
   if (fromSearch) {
     return {
       code,

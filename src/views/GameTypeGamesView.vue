@@ -34,8 +34,7 @@ const gameCards = computed(() =>
   lobbyStore.LobbyGameList.filter((game) => {
     const matchByTypeId =
       gameTypeId.value !== undefined && Number(game.gametype) === gameTypeId.value
-    const matchByTypeName =
-      game.gametypename === gameTypeName.value || game.gametypename === code
+    const matchByTypeName = game.gametypename === gameTypeName.value || game.gametypename === code
     return matchByTypeId || matchByTypeName
   }).map((game, i) => ({
     id: game.id,
