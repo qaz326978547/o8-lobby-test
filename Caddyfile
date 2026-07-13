@@ -1,0 +1,24 @@
+:80 {
+    encode gzip zstd
+
+    # 保留 /api 前綴，代理到原 API
+    handle /api/* {
+        reverse_proxy https://frontendwebsite.ugsdev.com {
+            header_up Host frontendwebsite.ugsdev.com
+            header_up X-Forwarded-Host {host}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+
+    # Vue / Vite 靜態網站
+    handle {
+        root * /usr/share/caddy
+        try_files {path} /index.html
+        file_server
+    }
+
+    log {
+        output stdout
+        format json
+    }
+}
