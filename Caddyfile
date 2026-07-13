@@ -1,23 +1,25 @@
 # Caddyfile for o8-lobby-test
 
 :80 {
-    root * /usr/share/caddy
-    encode gzip
-    
-    # API 反向代理 - 必须在 file_server 之前
-    reverse_proxy /api/* https://frontendwebsite.ugsdev.com {
-        header_uri -X-Forwarded-Prefix /api
-        header_up X-Forwarded-Proto https
-        header_up X-Forwarded-Host {http.request.host}
+    encode gzip zstd
+
+    # /api/* 反向代理到真實 API（handle 為互斥區塊，依序比對，
+    # 不受 Caddy 內建 try_files 排在 reverse_proxy 之前的固定順序影響）
+    handle /api/* {
+        reverse_proxy https://frontendwebsite.ugsdev.com {
+            header_up Host frontendwebsite.ugsdev.com
+            header_up X-Forwarded-Host {host}
+            header_up X-Forwarded-Proto {scheme}
+        }
     }
-    
-    # 提供静态文件
-    file_server
-    
-    # 处理 SPA 路由
-    try_files {path} /index.html
-    
-    # 日志
+
+    # 其餘路徑：靜態檔案 + SPA fallback
+    handle {
+        root * /usr/share/caddy
+        try_files {path} /index.html
+        file_server
+    }
+
     log {
         output stdout
         format json
