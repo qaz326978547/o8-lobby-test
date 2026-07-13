@@ -1,22 +1,23 @@
+# Caddyfile for o8-lobby-test
+
 :80 {
-    encode gzip zstd
-
-    # 保留 /api 前綴，代理到原 API
-    handle /api/* {
-        reverse_proxy https://frontendwebsite.ugsdev.com {
-            header_up Host frontendwebsite.ugsdev.com
-            header_up X-Forwarded-Host {host}
-            header_up X-Forwarded-Proto {scheme}
-        }
+    root * /usr/share/caddy
+    encode gzip
+    
+    # API 反向代理 - 必须在 file_server 之前
+    reverse_proxy /api/* https://frontendwebsite.ugsdev.com {
+        header_uri -X-Forwarded-Prefix /api
+        header_up X-Forwarded-Proto https
+        header_up X-Forwarded-Host {http.request.host}
     }
-
-    # Vue / Vite 靜態網站
-    handle {
-        root * /usr/share/caddy
-        try_files {path} /index.html
-        file_server
-    }
-
+    
+    # 提供静态文件
+    file_server
+    
+    # 处理 SPA 路由
+    try_files {path} /index.html
+    
+    # 日志
     log {
         output stdout
         format json
